@@ -4624,7 +4624,7 @@ sda               0.00     0.00    0.00    0.00     0.00     0.00     0.00     0
 
 使用 vmstat 命令也可以查看有关硬盘的统计数据，例如：
 
-```
+```shell
 [root@bogon ~]# vmstat -d 3 2
 disk- ------------reads------------ ------------writes----------- -----IO------
        total merged sectors      ms  total merged sectors      ms    cur    sec

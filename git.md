@@ -8,7 +8,7 @@
 
 安装完成后，还需要最后一步设置，在命令行输入：
 
-```
+```bash
 $ git config --global user.name "Your Name"
 $ git config --global user.email "email@example.com"
 ```
@@ -19,7 +19,7 @@ $ git config --global user.email "email@example.com"
 
 在一个合适的位置新建一个文件夹，进入文件夹后
 
-```
+```bash
 git init
 ```
 
@@ -33,7 +33,7 @@ git init
 
 远程克隆下来：
 
-```
+```bash
 git clone git@gitlab.hengtonggroup.com.cn:zhangjs/test.git
 cd test
 touch README.md
@@ -44,7 +44,7 @@ git push -u origin master
 
 本地新建一个目录再远程连接远程仓库：
 
-```
+```shell
 cd existing_folder
 git init
 git remote add origin git@gitlab.hengtonggroup.com.cn:zhangjs/test.git

@@ -18,7 +18,7 @@ https://docs.ceph.com/docs/master/start/
 
 磁盘情况，两块可用盘,sdb,sdc：
 
-```
+```shell
 [root@test-master-1 /]# lsblk
 NAME            MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
 sda               8:0    0   60G  0 disk 
@@ -35,7 +35,7 @@ sr0              11:0    1 1024M  0 rom
 
 ## 1.1、关闭防火墙与selinux
 
-```
+```shell
 systemctl disable firewalld && systemctl stop firewalld
 ```
 
@@ -48,7 +48,7 @@ selinux:
 
 centos7使用chronyd作为时间服务器，能保持系统时间与时间服务器（NTP）同步。
 
-```
+```shell
 systemctl restart chronyd.service && systemctl enable chronyd.service
 ```
 
@@ -56,7 +56,7 @@ systemctl restart chronyd.service && systemctl enable chronyd.service
 
 时区：
 
-```
+```shell
 timedatectl set-timezone Asia/Shanghai
 ```
 
@@ -65,7 +65,7 @@ timedatectl set-timezone Asia/Shanghai
 linux上有两套管理网络的工具：network, NetworkManager。
 因为NetworkManager会自动的做一些网络相关配置，比如在网络中断以后清理路由。一般桌面环境才会使用这个工具。所以为了防止莫名其妙的网络问题，一般都会把NetworkManager关闭。
 
-```
+```shell
 systemctl disable NetworkManager && systemctl stop NetworkManager
 ```
 
@@ -74,7 +74,7 @@ systemctl disable NetworkManager && systemctl stop NetworkManager
 确保可以ping通短主机名，根据需要解决主机名解析问题。这里直接加`/etc/hosts`。
 比如我这里：
 
-```
+```shell
 [root@test-master-1 baremetal]# cat /etc/hosts
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
@@ -91,7 +91,7 @@ xx.xx.105.228 test-node-3
 
 ### 1.5.1、文件描述符
 
-```
+```shell
 cat >> /etc/security/limits.conf << EOF
 * soft nofile 65535
 * hard nofile 65535
@@ -104,7 +104,7 @@ EOF
 
 设置系统全局进程数量，以及尽量不使用swap。
 
-```
+```shell
 cat >> /etc/sysctl.conf << EOF
 kernel.pid_max = 4194303
 vm.swappiness = 0
@@ -115,14 +115,14 @@ sysctl -p
 磁盘性能
 提高数据预读的大小:
 
-```
+```shell
 echo "8192" > /sys/block/sda/queue/read_ahead_kb
 cat >> /etc/rc.d/rc.local << EOF
 echo "8192" > /sys/block/sda/queue/read_ahead_kb
 EOF
 ```
 
-```
+```shell
 /etc/rc.d/rc.local
 ` 默认情况下没有执行权限，需要添加执行权限。`
 chmod +x /etc/rc.d/rc.local
@@ -132,7 +132,7 @@ chmod +x /etc/rc.d/rc.local
 ssd盘改成`noop`， sata/sas改成`deadline`。
 比如我这里是sata，并且有两块硬盘可以用于ceph。
 
-```
+```shell
 echo "deadline" > /sys/block/sdb/queue/scheduler
 echo "deadline" > /sys/block/sdc/queue/scheduler
 cat >> /etc/rc.d/rc.local << EOF
@@ -141,7 +141,7 @@ echo "deadline" > /sys/block/sdc/queue/scheduler
 EOF
 ```
 
-```
+```shell
 [root@test-master-1 baremetal]# cat /sys/block/sdb/queue/scheduler
 noop [deadline] cfq 
 [root@test-master-1 baremetal]# cat /sys/block/sdc/queue/scheduler
@@ -153,7 +153,7 @@ noop [deadline] cfq
 执行`ceph-deploy`命令的节点需要免密ssh登录其他节点。
 默认可能没有ssh登录用的key，需要执行`ssh-keygen`生成。
 
-```
+```shell
 ssh-keygen
 ssh-copy-id root@xx.xx.105.224
 ssh-copy-id root@xx.xx.105.225
@@ -164,13 +164,13 @@ ssh-copy-id root@xx.xx.105.225
 添加epel源
 需要从epel下载依赖。我这里使用阿里的epel源。
 
-```
+```shell
 wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo
 ```
 
 添加`ceph-deploy`的yum源。使用国内的源，阿里，163都有。
 
-```
+```shell
 vim /etc/yum.repos.d/ceph.repo
 ```
 
@@ -207,13 +207,13 @@ ceph-noarch里是一些管理工具以及`ceph-deploy`，主要的ceph软件在c
 
 ## 2.1、安装ceph-deploy
 
-```
+```shell
 yum install -y ceph-deploy
 ```
 
 如果执行`ceph-deploy`命令报错：
 
-```
+```shell
 [root@test-master-1 /]# ceph-deploy
 Traceback (most recent call last):
   File "/usr/bin/ceph-deploy", line 18, in <module>
@@ -225,7 +225,7 @@ ImportError: No module named pkg_resources
 
 需要安装`python-setuptools`:
 
-```
+```shell
 yum install python-setuptools -y
 ```
 
@@ -236,7 +236,7 @@ yum install python-setuptools -y
 
 在安装过程中如果想重新开始，执行：
 
-```
+```shell
 ceph-deploy purge {ceph-node} [{ceph-node}]ceph-deploy purgedata {ceph-node} [{ceph-node}]ceph-deploy forgetkeysrm ceph.*
 ```
 
@@ -248,14 +248,14 @@ ceph-deploy purge {ceph-node} [{ceph-node}]ceph-deploy purgedata {ceph-node} [{c
 `ceph-deploy new <initial-monitor-node>`
 这一步是确定`ceph monitor`组件的节点，我这里先设置两个节点，完了以后再扩展。 `monitor`组件本身需要实现高可用，所以也是N/2+1的规则，最好是奇数。
 
-```
+```shell
 ceph-deploy new test-master-1 test-master-2
 ```
 
 看一下执行过程，其实就是确定目标节点ip，确认monitor节点，生成monitor key.
 目录中生成了这几个文件：
 
-```
+```shell
 ceph.conf  ceph-deploy-ceph.log  ceph.mon.keyring
 ```
 
@@ -269,7 +269,7 @@ https://docs.ceph.com/docs/master/rados/configuration/network-config-ref/
 
 所有ceph节点。
 
-```
+```shell
 yum install ceph -y
 ```
 
@@ -280,38 +280,38 @@ yum install ceph -y
 
 安装epel-release及yum相关组件
 
-```
+```shell
 yum -y install epel-release yum-plugin-priorities yum-utils
 ```
 
 安装Ceph及相关组件
 
-```
+```shell
 yum install -y ceph-deploy ceph ceph-radosgw snappy leveldb gdisk python-argparse gperftools-libs
 ```
 
 查看ceph版本
 
-```
+```shell
 [root@test-master-1 ~]# ceph -v
 ceph version 14.2.22 (ca74598065096e6fcbd8433c8779a2be0c889351) nautilus (stable)
 ```
 
 ## 2.3、部署`monitor`组件以及收集各种key
 
-```
+```shell
 ceph-deploy mon create-initial
 ```
 
 执行成功以后，ps查看进程会发现上面设置的节点已经运行了`monitor`组件：
 
-```
+```shell
 /usr/bin/ceph-mon -f --cluster ceph --id cephnode2 --setuser ceph --setgroup ceph
 ```
 
 目录里会多出来很多key：
 
-```
+```shell
 [root@test-master-1 ~]# ll
 total 76
 -rw-------. 1 root root  1655 Aug 24 09:32 anaconda-ks.cfg
@@ -331,7 +331,7 @@ total 76
 
 只是为了执行一些ceph cli命令时不需要再指定`monitor`节点地址与admin key文件。比如：ceph、rbd等命令就是需要使用`/etc/ceph/ceph.client.admin.keyring`来连接集群。
 
-```
+```shell
 ceph-deploy admin test-master-1 test-master-2 test-master-3
 ```
 

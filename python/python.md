@@ -2,23 +2,23 @@
 
 ## 1.1 修改yum源
 
-```
+```shell
 wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo
 ```
 
 ## 1.2 安装依赖
 
-```
+```shell
 yum -y install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc make
 ```
 
-```
+```shell
 yum install libffi-devel wget  xz  atuomake   epel-release git -y
 ```
 
 ## 1.3 编译安装
 
-```
+```shell
 ./configure --prefix=/user/local/python3
 make
 make install
@@ -26,13 +26,13 @@ make install
 
 ## 1.4 创建软链接
 
-```
+```shell
 ln -s /usr/local/python3/bin/python3.8 /usr/local/bin/python3
 ```
 
 ## 1.5 添加环境变量
 
-```
+```shell
 vim .bash_profile
 在文件中添加：
 export PYTHON_HOME=/usr/local/python3/bin/python3.8
@@ -46,7 +46,7 @@ source ~/.bash_profile
 
 ## 2.1 安装requests库
 
-```
+```shell
 python3 -m pip install requests
 ```
 
@@ -54,11 +54,11 @@ python3 -m pip install requests
 
 需要先配置ceph源：
 
-```
+```shell
 vim /etc/yum.repos.d/ceph.repo
 ```
 
-```
+```shell
 [ceph]
 name=Ceph packages for $basearch
 baseurl=https://mirrors.aliyun.com/ceph/rpm-nautilus/el7/$basearch
@@ -87,11 +87,9 @@ gpgkey=https://download.ceph.com/keys/release.asc
 
 然后执行：
 
-```
+```shell
 yum install python3-rados -y
 ```
-
-
 
 python中查询MySQL：
 
@@ -219,7 +217,6 @@ db.close()
 -c 使用控制台，无窗口
 -D 创建一个目录，里面包含exe以及其他一些依赖性文件
 
-```
+```shell
 pyinstaller -F -w --icon=“C:\Download\k1.ico” 台账查询_V1.3.py
 ```
-

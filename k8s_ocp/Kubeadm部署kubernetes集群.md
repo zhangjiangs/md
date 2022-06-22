@@ -1,5 +1,3 @@
-
-
 # Kubeadm部署kubernetes集群
 
 ## 1、配置镜像源
@@ -21,7 +19,7 @@ yum makecache
 
 ### 2.1 、关闭seLinux、防火墙
 
-```
+```shell
 systemctl stop firewalld
 systemctl disable firewalld
 ```
@@ -32,7 +30,7 @@ setenforce 0
 sed -i 's/^SELINUX=enforcing$/SELINUX=disabled/' /etc/selinux/config
 ```
 
-### 2.2 、关闭Linux的swap分区：
+### 2.2 、关闭Linux的swap分区
 
 ```shell
 swapoff -a    #重启后失效
@@ -49,7 +47,7 @@ Swap:             0           0           0
 
 swappiness参数调整，修改/etc/sysctl.d/k8s.conf添加下面一行：
 
-```
+```shell
 vm.swappiness = 0
 ```
 
@@ -66,7 +64,7 @@ vm.swappiness = 0
 
 ### 2.3、 将桥接的IPV4流量传递到iptables的链
 
-```
+```shell
 [root@xx-xx-1 /]# cat etc/sysctl.d/k8s.conf 
 vm.swappiness=0
 
@@ -81,7 +79,7 @@ net.bridge.bridge-nf-call-iptables = 1
 
 ### 2.4、 加载IPVS模块
 
-```
+```shell
 modprobe -- ip_vs
 modprobe -- ip_vs_rr
 modprobe -- ip_vs_wrr
@@ -93,13 +91,13 @@ modprobe -- nf_conntrack_ipv4
 
 ### 2.5、设置时间同步
 
-```
+```shell
 yum install ntpdate -y
 ```
 
 ### 2.6、安装一些其他必要组件、升级系统组件
 
-```
+```shell
 yum -y install bash-completion ipvsadm lrzsz net-tools telnet
  
 # 解决系统最小化安装后，命令不能自动补全的问题
@@ -146,7 +144,7 @@ Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docke
 Created symlink from /etc/systemd/system/multi-user.target.wants/docker.service to /usr/lib/systemd/system/docker.service.
 ```
 
-```
+```shell
 yum install *.rpm --downloadonly --downloaddir=./
 #安装所需的其他依赖包
 rpm -ivh *.rpm
@@ -214,6 +212,7 @@ Server:
   127.0.0.0/8
  Live Restore Enabled: false
 ```
+
 以下操作：在三个节点上为docker配置本地cgroupdriver，以及阿里云的镜像仓库，并reload配置、重启docker。
 
 ```shell
@@ -224,7 +223,7 @@ Server:
 }
 ```
 
-```
+```shell
 systemctl daemon-reload
 systemctl restart docker.service
 ```
@@ -342,19 +341,19 @@ nodeRegistration:
 
 在新旧版本之间进行配置转换：
 
-```
+```shell
 kubeadm config migrate
 ```
 
 列出所需的镜像列表：
 
-```
+```shell
 kubeadm config images list
 ```
 
 拉取镜像到本地
 
-```
+```shell
 kubeadm config images pull
 ```
 
@@ -448,7 +447,7 @@ kubeadm join xx.xx105.221:6443 --token s64i8y.tv16uysn83xr85us \
 
 上面的执行日志的最后两行，就是用于node节点加入到集群的命令，有效期为24小时，超过24小时如果需要加入新的节点，需要使用下面的命令在master重新生成。
 
-```
+```shell
 kubeadm token create --print-join-command
 ```
 
@@ -456,7 +455,7 @@ kubeadm token create --print-join-command
 
 将admin.conf配置文件复制到HOME目录的.kube子目录下，命令如下：
 
-```
+```shell
 mkdir -p $HOME/.kube
 cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 chown $(id -u):$(id -g) $HOME/.kube/config
@@ -464,13 +463,13 @@ chown $(id -u):$(id -g) $HOME/.kube/config
 
 如果是root用户则也可以通过设置环境变量KUBECONFIG完成kubuctl的设置：
 
-```
+```shell
 export KUBECONFIG=/etc/kubernetes/admin.conf
 ```
 
 <!--注：如果不操作的话后面执行kubectl命令的时候会报错：-->
 
-```
+```shell
 The connection to the server localhost:8080 was refused - did you specify the right host or port?
 ```
 
@@ -478,7 +477,7 @@ The connection to the server localhost:8080 was refused - did you specify the ri
 
 然后就可以使用kubectl命令对集群进行操作了。例如：
 
-```
+```shell
 [root@xx-xx-1 ~]# kubectl -n kube-system get configmap
 NAME                                 DATA   AGE
 coredns                              1      31m
@@ -489,7 +488,7 @@ kubeadm-config                       2      31m
 kubelet-config-1.21                  1      31m
 ```
 
-```
+```shell
 [root@xx-xx-1 ~]# kubectl get node
 NAME        STATUS     ROLES                  AGE   VERSION
 xx-xx-1   NotReady   control-plane,master   32m   v1.21.3
@@ -501,7 +500,7 @@ xx-xx-1   NotReady   control-plane,master   32m   v1.21.3
 
 首先按照上面的步骤安装好环境，从节点无需安装kubectl
 
-```
+```shell
 # 从节点
  yum install -y kubelet-1.21.3 kubeadm-1.21.3 
  systemctl enable kubelet.service
@@ -509,13 +508,13 @@ xx-xx-1   NotReady   control-plane,master   32m   v1.21.3
 
 安装好kubelet-1.21.3 kubeadm-1.21.3 kubectl-1.21.3后执行：
 
-```
+```shell
 kubeadm join xx.xx105.221:6443 --token s64i8y.tv16uysn83xr85us --discovery-token-ca-cert-hash sha256:09177019b944ba1a14aeb716b6e03811c2be4030111f82174c8081a9c8b52d38
 ```
 
 成功后再去主节点看，就能看到新加入的节点了
 
-```
+```shell
 [root@xx-xx-1 ~]# kubectl get node
 NAME        STATUS     ROLES                  AGE   VERSION
 xx-xx-1   NotReady   control-plane,master   71m   v1.21.3
@@ -528,7 +527,7 @@ xx-xx-2   NotReady   <none>                 50s   v1.21.3
 
 然后将其中的
 
-```
+```shell
 apiVersion: policy/v1beta1
  
 修改为：
@@ -573,7 +572,7 @@ xx-xx-2   Ready    <none>                 27m   v1.21.3
 
 我们在看节点信息的时候就可以看到已经是ready状态了
 
-```
+```shell
 [root@xx-xx-1 kubernetes]# kubectl get pods --all-namespaces
 NAMESPACE     NAME                                       READY   STATUS             RESTARTS   AGE
 kube-system   calico-kube-controllers-58497c65d5-qkwdl   1/1     Running            0          27m
@@ -591,14 +590,14 @@ kube-system   kube-scheduler-xx-xx-1                   1/1     Running          
 
 查看pod状态的时候发现有两个镜像还是不能正常下载
 
-```
+```shell
 [root@xx-xx-1 kubernetes]# docker pull registry.aliyuncs.com/google_containers/coredns:v1.8.0
 Error response from daemon: manifest for registry.aliyuncs.com/google_containers/coredns:v1.8.0 not found: manifest unknown: manifest unknown
 ```
 
-把	v去掉就可以了，然后在node节点也同样重新下载和重命名
+把v去掉就可以了，然后在node节点也同样重新下载和重命名
 
-```
+```shell
 [root@xx-xx-1 kubernetes]# docker pull registry.aliyuncs.com/google_containers/coredns:1.8.0
 1.8.0: Pulling from google_containers/coredns
 c6568d217a00: Pull complete 
@@ -608,15 +607,15 @@ Status: Downloaded newer image for registry.aliyuncs.com/google_containers/cored
 registry.aliyuncs.com/google_containers/coredns:1.8.0
 ```
 
-```
+```shell
 docker tag registry.aliyuncs.com/google_containers/coredns:1.8.0 registry.aliyuncs.com/google_containers/coredns:v1.8.0
 ```
 
-```
+```shell
 docker rmi registry.aliyuncs.com/google_containers/coredns:1.8.0
 ```
 
-```
+```shell
 [root@xx-xx-1 kubernetes]# kubectl get pods --all-namespaces
 NAMESPACE     NAME                                       READY   STATUS    RESTARTS   AGE
 kube-system   calico-kube-controllers-58497c65d5-qkwdl   1/1     Running   0          33m
