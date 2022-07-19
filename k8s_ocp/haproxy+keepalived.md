@@ -68,6 +68,7 @@ https://cbonte.github.io/haproxy-dconv/1.8/configuration.html
 ```
 
 ## Configure keepalived.conf
+
 ```sh
 [root@ht-haproxy-1 ~]# cat /etc/keepalived/keepalived.conf
 vrrp_script chk_haproxy {
@@ -92,6 +93,7 @@ chk_haproxy
 }
 }
 ```
+
 ```sh
 [root@ht-haproxy-2 ~]# cat /etc/keepalived/keepalived.conf
 vrrp_script chk_haproxy {

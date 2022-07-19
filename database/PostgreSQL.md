@@ -92,3 +92,8 @@ psql -h 0.0.0.0  -d one -U postgres -p 5432 -f dump2022.sql
 ```sql
 GRANT SELECT ON TABLE dm.dmd_ps_mat_acctg_eval_class_data_his TO presto;
 ```
+
+`CREATE ROLE xuelang NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN NOREPLICATION NOBYPASSRLS PASSWORD 'xl_2022';`
+
+`GRANT SELECT ON TABLE public.collect_data TO xuelang;`
+
